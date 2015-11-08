@@ -1,4 +1,5 @@
-{$, ScrollView} = require 'atom'
+
+{$, ScrollView} = require 'atom-space-pen-views'
 
 module.exports =
 class TodoListView extends ScrollView
@@ -9,10 +10,13 @@ class TodoListView extends ScrollView
       @div class: 'todo-list-resize-handle', outlet: 'resizeHandle'
 
   initialize: (serializeState) ->
-    atom.workspaceView.command 'todo-list:toggle', => @toggle()
-    atom.workspaceView.command 'todo-list:toggle-side', => @toggleSide()
+    super
+    atom.commands.add 'atom.workspace', 'todo-list:toggle', (e) => @toggle()
+    atom.commands.add 'atom-workspace', 'todo-list:toggle-side', (e) => @toggleSide()
     @on 'mousedown', '.todo-list-resize-handle', (e) => @resizeStarted(e)
     @on 'core:close core:cancel', => @detach()
+
+    # @TODO this subscribe API is no longer functional
     @subscribe atom.config.observe 'todo-list.showOnRightSide', callNow: false, (newValue) =>
       @detach()
       @attach()
@@ -131,6 +135,7 @@ class TodoListView extends ScrollView
     # Now update all the messages.
     @createReminderList()
 
+  # @TODO atom.config.toggle no longer works
   toggleSide: ->
     atom.config.toggle('todo-list.showOnRightSide')
 
@@ -151,11 +156,11 @@ class TodoListView extends ScrollView
     if atom.config.get('todo-list.showOnRightSide')
       @element.classList.remove('panel-left')
       @element.classList.add('panel-right')
-      atom.workspaceView.appendToRight(this)
+      atom.workspace.addRightPanel(item: this)
     else
       @element.classList.remove('panel-right')
       @element.classList.add('panel-left')
-      atom.workspaceView.appendToLeft(this)
+      atom.workspace.addLeftPanel(item: this)
 
   toggle: ->
     if @hasParent()

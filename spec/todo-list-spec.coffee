@@ -1,4 +1,3 @@
-{WorkspaceView} = require 'atom'
 TodoList = require '../lib/todo-list'
 
 # Use the command `window:run-package-specs` (cmd-alt-ctrl-p) to run specs.
@@ -7,24 +6,25 @@ TodoList = require '../lib/todo-list'
 # or `fdescribe`). Remove the `f` to unfocus the block.
 
 describe "TodoList", ->
-  activationPromise = null
+  [workspaceElement, activationPromise] = []
 
   beforeEach ->
-    atom.workspaceView = new WorkspaceView
+    workspaceElement = atom.views.getView(atom.workspace)
     activationPromise = atom.packages.activatePackage('todo-list')
 
   describe "when the todo-list:toggle event is triggered", ->
     it "attaches and then detaches the view", ->
-      expect(atom.workspaceView.find('.todo-list')).not.toExist()
+      jasmine.attachToDOM(workspaceElement)
+      expect(workspaceElement.querySelector('.todo-list')).not.toExist()
 
       # This is an activation event, triggering it will cause the package to be
       # activated.
-      atom.workspaceView.trigger 'todo-list:toggle'
+      atom.commands.dispatch workspaceElement, 'todo-list:toggle'
 
       waitsForPromise ->
         activationPromise
 
       runs ->
-        expect(atom.workspaceView.find('.todo-list')).toExist()
-        atom.workspaceView.trigger 'todo-list:toggle'
-        expect(atom.workspaceView.find('.todo-list')).not.toExist()
+        expect(workspaceElement.querySelector('.todo-list')).toExist()
+        atom.commands.dispatch workspaceElement, 'todo-list:toggle'
+        expect(workspaceElement.querySelector('.todo-list')).not.toExist()
